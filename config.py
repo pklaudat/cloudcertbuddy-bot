@@ -2,10 +2,8 @@
 import os
 from microsoft_agents.hosting.core import AgentAuthConfiguration, AuthTypes
 
-""" Bot Configuration """
 
-
-class DefaultConfig(AgentAuthConfiguration):
+class TeamsBotConfig(AgentAuthConfiguration):
     """Teams Bot Default Configuration"""
 
     PORT = 3978
@@ -18,8 +16,9 @@ class DefaultConfig(AgentAuthConfiguration):
         self.CLIENT_ID = os.getenv("MicrosoftAppId", "")
 
 
-class McpConfig:
+class AiServicesConfig:
 
     MICROSOFT_LEARN_MCP_ENDPOINT = "https://learn.microsoft.com/api/mcp"
     MICROSOFT_LEARN_CATALOG_API_ENDPOINT = ""
     GOOGLE_CALENDAR_MCP_ENDPOINT = ""
+    AI_FOUNDRY_PROJECT_ENDPOINT = os.getenv("AI_FOUNDRY_PROJECT_ENDPOINT")

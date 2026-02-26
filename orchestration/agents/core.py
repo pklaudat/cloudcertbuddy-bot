@@ -4,7 +4,7 @@ from agent_framework_azure_ai import (
     AzureAIAgentClient,
 )
 from agent_framework import Agent
-from config import DefaultConfig
+from config import AiServicesConfig
 
 
 class CustomAgent(Agent):
@@ -38,6 +38,6 @@ class CustomAgent(Agent):
         if cls._client is None:
             cls._client = AzureAIAgentClient(
                 credential=DefaultAzureCredential(),
-                project_endpoint=DefaultConfig.PROJECT_ENDPOINT,
+                project_endpoint=AiServicesConfig.AI_FOUNDRY_PROJECT_ENDPOINT,
             )
         return cls._instance
