@@ -1,0 +1,14 @@
+[project]
+name = "cloudcertbuddy-bot"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "agent-framework>=1.0.0rc2",
+    "azure-identity>=1.26.0b2",
+    "black>=26.1.0",
+    "microsoft-agents-authentication-msal>=0.8.0",
+    "microsoft-agents-hosting-fastapi>=0.8.0",
+    "openai>=2.24.0",
+]
