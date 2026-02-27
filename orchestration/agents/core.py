@@ -1,10 +1,52 @@
 import os
+from dataclasses import dataclass
 from azure.identity import DefaultAzureCredential
 from agent_framework_azure_ai import (
     AzureAIAgentClient,
 )
 from agent_framework import Agent
 from config import AiServicesConfig
+
+
+@dataclass
+class StudentInput:
+    topics_to_learn: list[str]
+    target_certification: str
+    days_until_exam: int
+
+
+@dataclass
+class LearningPath:
+    title: str
+    url: str
+    estimated_hours: int
+    modules: list[str]
+    completed: bool
+
+
+@dataclass
+class CuratedLearningPath:
+    paths: list[LearningPath]
+    total_time: int
+
+
+@dataclass
+class StudyEvent:
+    date: str
+    target_modules: list[str]
+    target_topics: list[str]
+    completed_modules: list[str]
+    completed_topics: list[str]
+
+
+@dataclass
+class StudyPlan:
+    plan: list[StudyEvent]
+    planned_time: int
+    completed_time: int
+    learning_path: CuratedLearningPath
+    target_certification_date: str
+    target_certification: str
 
 
 class CustomAgent(Agent):
