@@ -1,3 +1,6 @@
 [submodule "mcp/google-calendar-mcp"]
 	path = mcp/google-calendar-mcp
 	url = https://github.com/pklaudat/google-calendar-mcp.git
+[submodule "infra/landing-zone"]
+	path = infra/landing-zone
+	url = https://github.com/pklaudat/foundry-sandbox-for-agents.git
