@@ -1,85 +1,51 @@
 import os
+import datetime
+from typing import Optional
 from dataclasses import dataclass
 from azure.identity import DefaultAzureCredential
-from agent_framework_azure_ai import (
-    AzureAIAgentClient,
-)
 from agent_framework import Agent
+from agent_framework.azure import AzureAIAgentClient
+from agent_framework.openai import OpenAIChatClient
 from config import AiServicesConfig
-
-
-@dataclass
-class StudentInput:
-    topics_to_learn: list[str]
-    target_certification: str
-    days_until_exam: int
-
-
-@dataclass
-class LearningPath:
-    title: str
-    url: str
-    estimated_hours: int
-    modules: list[str]
-    completed: bool
-
-
-@dataclass
-class CuratedLearningPath:
-    paths: list[LearningPath]
-    total_time: int
-
-
-@dataclass
-class StudyEvent:
-    date: str
-    target_modules: list[str]
-    target_topics: list[str]
-    completed_modules: list[str]
-    completed_topics: list[str]
-
-
-@dataclass
-class StudyPlan:
-    plan: list[StudyEvent]
-    planned_time: int
-    completed_time: int
-    learning_path: CuratedLearningPath
-    target_certification_date: str
-    target_certification: str
 
 
 class CustomAgent(Agent):
 
     _client = None
 
-    def __init__(self, client, instructions, id, name, description, tools, prompt_file):
+    def __init__(self, name, description, prompt_file, model, tools=[]):
         instructions = self._load_instructions(prompt_file)
-        client = self.get_client()
+        client = self.get_client(model)
         super().__init__(
             client=client,
             instructions=instructions,
-            id=id,
+            id=name,
             name=name,
             description=description,
             tools=tools,
         )
 
     def _load_instructions(self, prompt_file: str) -> str:
-        prompt_path = os.path.join(
-            os.path.dirname(__file__), "..", "prompt", prompt_file
-        )
+        prompt_path = os.path.join(os.path.dirname(__file__), "prompts",  "system", prompt_file)
         if not os.path.exists(prompt_path):
-            raise FileNotFoundError(f"Prompt file '{prompt_file}' does not exist")
+            raise FileNotFoundError(f"Prompt file '{prompt_path}' does not exist")
 
         with open(prompt_path, "r", encoding="utf-8") as file:
             return file.read()
 
     @classmethod
-    def get_client(cls):
+    def get_client(cls, model):
         if cls._client is None:
-            cls._client = AzureAIAgentClient(
-                credential=DefaultAzureCredential(),
-                project_endpoint=AiServicesConfig.AI_FOUNDRY_PROJECT_ENDPOINT,
-            )
-        return cls._instance
+            match AiServicesConfig.MODEL_PROVIDER:
+                case "OPENAI":
+                    cls._client = OpenAIChatClient(
+                        model_id=model,
+                    )
+                case "AZURE":
+                    cls._client = AzureAIAgentClient(
+                        credential=DefaultAzureCredential(),
+                        project_endpoint=AiServicesConfig.AI_FOUNDRY_PROJECT_ENDPOINT,
+                        model_deployment_name=model,
+                    )
+
+        return cls._client

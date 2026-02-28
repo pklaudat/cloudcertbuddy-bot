@@ -42,7 +42,4 @@ class ContentSatefy:
                 }
             )
 
-        return {
-            "safe": False,
-            "blocked_categories": []
-        }
+        return {"safe": False, "blocked_categories": []}

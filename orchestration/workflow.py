@@ -1,85 +1,78 @@
-from orchestration.agents.core import CustomAgent
+from typing import cast
 from agent_framework import (
     MCPStreamableHTTPTool,
-    WorkflowRunState
-)
-from agent_framework.orchestrations import (
-    MagenticBuilder,
-    MagenticPlanReviewRequest
+    WorkflowRunState,
+    WorkflowBuilder,
+    Message
 )
 
+from orchestration.agents.core import CustomAgent
+from orchestration.agents.dispatcher import Dispatcher
+from orchestration.agents.human_validator import HumanValidator
+from orchestration.agents import models
 
-def build_agentic_workflow():
 
-    microsoft_learn_agent = CustomAgent(
-        name="MicrosoftLearnSpecialist",
-        description="""This agent interact with Microsoft Learn MCP and
-        provide user guidance across the microsoft knowledge base.
-        """,
+def certification_preparation_workflow():
+
+    MAX_ITERATIONS = 3
+
+    workflow_dispatcher = Dispatcher()
+
+    learn_path_curator = CustomAgent(
+        name="LearnPathCurator",
+        description="Learn Path Curator for Microsoft Certification",
         tools=[
             MCPStreamableHTTPTool(
                 name="Microsoft Learn MCP",
                 url="https://learn.microsoft.com/api/mcp",
                 approval_mode="never_require",
                 request_timeout=None,
+                description="Microsoft Learn official MCP server.",
             )
         ],
-        prompt_file="microsoft_learn.md",
+        prompt_file="learn_path_curator.md",
+        model=models.LEARNING_PATH_CURATOR_AGENT,
     )
 
-    google_calendar_agent = CustomAgent(
-        name="GoogleCalendar",
-        description="""
-        """,
-        tools=[
-            MCPStreamableHTTPTool(
-                name="Google Calendar API MCP",
-                url="",
-                approval_mode="always_require",
-            )
-        ],
-        prompt_file="google_calendar.md"
+    study_plan_generator = CustomAgent(
+        name="StudyPlanGenerator",
+        description="Study Plan Generator Agent",
+        # tools=[
+        #     MCPStreamableHTTPTool(
+        #         name="Google Calendar API MCP",
+        #         url="",
+        #         approval_mode="always_require",
+        #     )
+        # ],
+        prompt_file="study_plan_generator.md",
+        model=models.STUDY_PLAN_GENERATOR_AGENT,
     )
 
-    agent_manager = CustomAgent(
-        name="CloudBuddyCert",
-        description="""This agent coordinate the other agent responses
-        and provide clear guidance to the user
-
-        """,
-        prompt_file=""
+    engagement_agent = CustomAgent(
+        name="EngagementAgent",
+        description="Study Plan Engagement Agent",
+        prompt_file="engagement_agent.md",
+        model=models.ENGAGEMENT_AGENT_MODEL,
     )
 
-    return MagenticBuilder(
-        participants=[microsoft_learn_agent, google_calendar_agent],
-        agent_manager=agent_manager,
-        enable_plan_review=True,
-        intermediate_outputs=True,
-        max_round_count=5,
-        max_stall_count=2,
-        max_reset_count=2
+
+    return (
+        WorkflowBuilder(
+            name="MicrosoftCertificationPreparationAssistant",
+            max_iterations=MAX_ITERATIONS,
+            start_executor=workflow_dispatcher,
+        )
+        .add_edge(workflow_dispatcher, learn_path_curator)
+        # .add_chain([learn_path_curator, study_plan_generator, engagement_agent])
     ).build()
 
 
+async def run(message: str):
 
-async def process_event_stream(message: str):
-
-    worfklow = build_agentic_workflow()
-    plan_review_request: MagenticPlanReviewRequest | None = None
+    worfklow = certification_preparation_workflow()
     async for event in worfklow.run(message=message, stream=True):
-        if event.type == "request_info" and event.request_type is MagenticPlanReviewRequest:
-            plan_review_request = event.data
-            print(f"Captured plan review request: {event.request_id}")
-
-        if event.type == "status" and event.state is WorkflowRunState.IDLE_WITH_PENDING_REQUESTS:
-            break
-
-    
-    if not plan_review_request:
-        print("No plan review requested.")
-        return 
-
-
-
-
-
+        output_data = cast(list[Message], event.data)
+        if isinstance(output_data, list):
+            for item in output_data:
+                if isinstance(item, Message) and item.text:
+                    print(f"\n[Final Answer]: {item.text}")

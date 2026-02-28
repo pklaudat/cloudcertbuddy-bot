@@ -17,9 +17,17 @@ class TeamsBotConfig(AgentAuthConfiguration):
 
 
 class AiServicesConfig:
-
+    MODEL_PROVIDER = "OPENAI"
     MICROSOFT_LEARN_MCP_ENDPOINT = "https://learn.microsoft.com/api/mcp"
     MICROSOFT_LEARN_CATALOG_API_ENDPOINT = ""
     GOOGLE_CALENDAR_MCP_ENDPOINT = ""
-    AI_FOUNDRY_PROJECT_ENDPOINT = os.getenv("AI_FOUNDRY_PROJECT_ENDPOINT")
-    CONTENT_SAFETY_ENDPOINT = os.getenv("AI_SERVICES_ENDPOINT")
+    AI_FOUNDRY_PROJECT_ENDPOINT = os.getenv("AI_FOUNDRY_PROJECT_ENDPOINT", "")
+    CONTENT_SAFETY_ENDPOINT = os.getenv("AI_SERVICES_ENDPOINT", "")
+
+
+class AgentModelsConfig:
+    DISPATCHER = "gpt-4o-mini"
+    ENGAGEMENT_AGENT_MODEL = "gpt-4o-mini"
+    LEARNING_PATH_CURATOR_AGENT = "gpt-4o-mini"
+    READINESS_ASSESSMENT_AGENT = "gpt-4o-mini"
+    STUDY_PLAN_GENERATOR_AGENT = "gpt-4o-mini"
