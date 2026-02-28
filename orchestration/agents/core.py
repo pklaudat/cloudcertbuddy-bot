@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from azure.identity import DefaultAzureCredential
 from agent_framework import Agent
 from agent_framework.azure import AzureAIAgentClient
-from agent_framework.openai import OpenAIChatClient
+from agent_framework.openai import OpenAIResponsesClient
 from config import AiServicesConfig
 
 
@@ -52,8 +52,6 @@ class CustomAgent(Agent):
             {json.dumps(output_format.model_json_schema(), indent=2)}
             """
 
-        print(f"Instiated agent prompt: {prompt_content}")
-
         return prompt_content
 
     @classmethod
@@ -61,7 +59,7 @@ class CustomAgent(Agent):
         if cls._client is None:
             match AiServicesConfig.MODEL_PROVIDER:
                 case "OPENAI":
-                    cls._client = OpenAIChatClient(
+                    cls._client = OpenAIResponsesClient(
                         model_id=model,
                     )
                 case "AZURE":

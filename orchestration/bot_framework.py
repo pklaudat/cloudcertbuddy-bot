@@ -18,6 +18,8 @@ from agent_framework import Message
 from orchestration.agents.core import CustomAgent
 from orchestration.agents import models
 
+
+
 agent_config: dict[str, AgentAuthConfiguration] = {
     "SERVICE_CONNECTION": AgentAuthConfiguration(
         auth_type=AuthTypes.client_secret,
@@ -67,8 +69,13 @@ async def on_message(context: TurnContext, _):
     async for event in agent.run(
         messages=[Message("user", context.activity.text)], stream=True
     ):
-        message += event.text
-        current_activity = Activity(
-            id=session.id, type=ActivityTypes.message, text=message
-        )
-        await context.update_activity(current_activity)
+        if event.contents:
+            for content in event.contents:
+                print(content)
+                if hasattr(content, "text") and content.text != "" and content.text != None:
+                    message += content.text
+
+                    current_activity = Activity(
+                        id=session.id, type=ActivityTypes.message, text=message
+                    )
+                    await context.update_activity(current_activity)
