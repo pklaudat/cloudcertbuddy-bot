@@ -10,6 +10,12 @@ class ExperienceLevel(Enum):
     ADVANCED = "advanced"
 
 
+class UserProfile(BaseModel):
+    email: str
+    certifications: list[str]
+    applied_skills: list[str]
+
+
 class StudentInput(BaseModel):
     topics: List[str]
     certification_goal: Optional[str] = None
@@ -20,7 +26,6 @@ class StudentInput(BaseModel):
     experience_level: Optional[ExperienceLevel] = None
 
 
-
 class LearningPath(BaseModel):
     title: str
     url: str
@@ -29,18 +34,18 @@ class LearningPath(BaseModel):
     related_certification: Optional[str]
 
 
-
 class StudySession(BaseModel):
-    week: int
     title: str
     duration_hours: float
     milestone: str
-
+    url: str
 
 
 class StudyPlan(BaseModel):
+    total_days: int
     total_weeks: int
     total_hours: float
+    target_exam: str
     sessions: List[StudySession]
 
 
@@ -62,10 +67,10 @@ class WorkflowMetadata(BaseModel):
     timestamp: datetime
 
 
-
 class WorkflowState(BaseModel):
     user_input: StudentInput
     metadata: WorkflowMetadata
+    target_exam: str
     curated_learning_paths: List[LearningPath] = Field(default_factory=list)
     generated_study_plan: Optional[StudyPlan] = None
     readiness: Optional[ReadinessStatus] = None

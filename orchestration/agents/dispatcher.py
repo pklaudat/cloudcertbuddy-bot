@@ -32,7 +32,9 @@ class Dispatcher(Executor):
 
         student_input = await self.extract_student_input(message)
 
-        prompt_path = os.path.join(os.path.dirname(__file__),  "prompts", "user", "learn_path_curator.md")
+        prompt_path = os.path.join(
+            os.path.dirname(__file__), "prompts", "user", "learn_path_curator.md"
+        )
         if not os.path.exists(prompt_path):
             raise FileNotFoundError(f"Prompt file '{prompt_path}' does not exist")
 
@@ -42,10 +44,8 @@ class Dispatcher(Executor):
         prompt = Template(content).substitute(
             topics=",".join(student_input.topics),
             experience_level=student_input.experience_level.value,
-            exam=student_input.certification_goal
+            exam=student_input.certification_goal,
         )
-
-        print(f"prompt for learn path curator agent: {prompt}")
 
         await ctx.send_message(prompt)
 
@@ -55,9 +55,10 @@ class Dispatcher(Executor):
         llm_response = await self.client.get_response(
             messages=[message],
             options=ChatOptions(
-                model_id=AgentModelsConfig.DISPATCHER, 
-                response_format=StudentInput, 
-                temperature=0.3
+                model_id=AgentModelsConfig.DISPATCHER,
+                response_format=StudentInput,
+                temperature=0.3,
+                top_p=0.6,
             ),
         )
 

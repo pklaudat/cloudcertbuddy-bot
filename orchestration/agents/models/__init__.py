@@ -1,8 +1,6 @@
-
-
 DISPATCHER = "gpt-4o-mini"
 ENGAGEMENT_AGENT_MODEL = "gpt-4o-mini"
 LEARNING_PATH_CURATOR_AGENT = "gpt-4o-mini"
 READINESS_ASSESSMENT_AGENT = "gpt-4o-mini"
 STUDY_PLAN_GENERATOR_AGENT = "gpt-4o-mini"
-   
+CLOUD_CERT_BUDDY_AGENT = "gpt-4o-mini"
