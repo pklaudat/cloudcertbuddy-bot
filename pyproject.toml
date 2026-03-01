@@ -9,7 +9,9 @@ dependencies = [
     "azure-ai-contentsafety>=1.0.0",
     "azure-identity>=1.26.0b2",
     "black>=26.1.0",
+    "bs4>=0.0.2",
     "microsoft-agents-authentication-msal>=0.8.0",
     "microsoft-agents-hosting-fastapi>=0.8.0",
+    "msal>=1.35.0",
     "openai>=2.24.0",
 ]

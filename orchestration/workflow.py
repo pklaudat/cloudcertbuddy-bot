@@ -29,7 +29,7 @@ def certification_preparation_workflow():
                 name="Microsoft Learn MCP",
                 url="https://learn.microsoft.com/api/mcp",
                 approval_mode="never_require",
-                request_timeout=None,
+                request_timeout=30,
                 description="Microsoft Learn official MCP server.",
             )
         ],
@@ -83,11 +83,3 @@ async def run(message: str):
                 "assistant" if msg.role == "assistant" else "user"
             )
             print(f"{'-' * 60}\n{i:02d} [{name}]\n{msg.text}")
-
-    # outputs = events.get_outputs()
-    # async for event in worfklow.run(message=message, stream=True):
-    #     output_data = cast(list[Message], event.data)
-    #     if isinstance(output_data, list):
-    #         for item in output_data:
-    #             if isinstance(item, Message) and item.text:
-    #                 print(f"\n[Final Answer]: {item.text}")

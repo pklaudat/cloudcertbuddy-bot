@@ -1,11 +1,16 @@
 from os import environ
 import uvicorn
 from fastapi import FastAPI, Request
+from dotenv import load_dotenv
 from microsoft_agents.hosting.fastapi import (
     start_agent_process,
     JwtAuthorizationMiddleware,
 )
 from orchestration.bot_framework import AGENT_APP
+
+
+t = load_dotenv()
+print(t)
 
 app = FastAPI(title="PK Bot", version="0.0.1")
 # app.add_middleware(JwtAuthorizationMiddleware)

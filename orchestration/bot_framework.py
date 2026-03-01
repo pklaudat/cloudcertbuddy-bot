@@ -9,7 +9,7 @@ from microsoft_agents.hosting.core import (
     AgentAuthConfiguration,
     AuthTypes,
 )
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from microsoft_agents.hosting.core.connector import ConnectorClient
 from microsoft_agents.hosting.fastapi import CloudAdapter
 from microsoft_agents.authentication.msal import MsalConnectionManager, MsalAuth
@@ -17,15 +17,16 @@ from agent_framework import Message
 
 from orchestration.agents.core import CustomAgent
 from orchestration.agents import models
-
+from orchestration.agents import tools
+from config import TeamsBotConfig
 
 
 agent_config: dict[str, AgentAuthConfiguration] = {
     "SERVICE_CONNECTION": AgentAuthConfiguration(
         auth_type=AuthTypes.client_secret,
-        client_id=CONNECTIONS__SERVICE_CONNECTION__SETTINGS__CLIENT,
-        client_secret=CONNECTIONS__SERVICE_CONNECTION__SETTINGS__CLIENTSECRET,
-        tenant_id=CONNECTIONS__SERVICE_CONNECTION__SETTINGS__TENANTID,
+        client_id=TeamsBotConfig.CLIENT_ID,
+        client_secret=TeamsBotConfig.CLIENT_SECRET,
+        tenant_id=TeamsBotConfig.TENANT_ID,
     )
 }
 
@@ -61,7 +62,7 @@ async def on_message(context: TurnContext, _):
         description="The cloud cert buddy agent",
         prompt_file="cloud_buddy_cert.md",
         model=models.CLOUD_CERT_BUDDY_AGENT,
-        tools=[],
+        tools=[tools.user_profile_assessment],
     )
 
     message = ""
