@@ -1,5 +1,3 @@
-from os import environ
-from dotenv import load_dotenv
 from microsoft_agents.activity import Activity, ActivityTypes
 from microsoft_agents.hosting.core import (
     AgentApplication,
@@ -9,7 +7,7 @@ from microsoft_agents.hosting.core import (
     AgentAuthConfiguration,
     AuthTypes,
 )
-# from dotenv import load_dotenv
+
 from microsoft_agents.hosting.core.connector import ConnectorClient
 from microsoft_agents.hosting.fastapi import CloudAdapter
 from microsoft_agents.authentication.msal import MsalConnectionManager, MsalAuth
@@ -18,8 +16,12 @@ from agent_framework import Message
 from orchestration.agents.core import CustomAgent
 from orchestration.agents import models
 from orchestration.agents import tools
+from orchestration.workflow import run as workflow_run
 from config import TeamsBotConfig
 
+print(f"Teams bot running on {TeamsBotConfig.CLIENT_ID}")
+print(f"Teams bot running on {TeamsBotConfig.CLIENT_SECRET}")
+print(f"Teams bot running on {TeamsBotConfig.TENANT_ID}")
 
 agent_config: dict[str, AgentAuthConfiguration] = {
     "SERVICE_CONNECTION": AgentAuthConfiguration(
@@ -57,23 +59,36 @@ AGENT_APP.message("/help")(_help)
 async def on_message(context: TurnContext, _):
     session = await context.send_activity(f"Processing your message ...")
 
+    # # token = context.activity.value.get("authentication")
+
+    # def bind_token(tool_func, token):
+    #     async def wrapped_tool(*args, **kwargs):
+    #         return await tool_func(access_token=token, *args, **kwargs)
+    #     return wrapped_tool
+
+    # secured_profile_tool = bind_token(tools.user_profile_assessment, token)
+
     agent = CustomAgent(
         name="CloudCertBuddy",
         description="The cloud cert buddy agent",
         prompt_file="cloud_buddy_cert.md",
         model=models.CLOUD_CERT_BUDDY_AGENT,
-        tools=[tools.user_profile_assessment],
+        tools=[],
     )
 
     message = ""
 
     async for event in agent.run(
-        messages=[Message("user", context.activity.text)], stream=True
+        messages=Message("user", context.activity.text), stream=True
     ):
         if event.contents:
             for content in event.contents:
                 print(content)
-                if hasattr(content, "text") and content.text != "" and content.text != None:
+                if (
+                    hasattr(content, "text")
+                    and content.text != ""
+                    and content.text != None
+                ):
                     message += content.text
 
                     current_activity = Activity(

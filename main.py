@@ -6,14 +6,11 @@ from microsoft_agents.hosting.fastapi import (
     start_agent_process,
     JwtAuthorizationMiddleware,
 )
+from agent_framework_devui import serve
 from orchestration.bot_framework import AGENT_APP
-
-
-t = load_dotenv()
-print(t)
+from orchestration.workflow import certification_preparation_workflow
 
 app = FastAPI(title="PK Bot", version="0.0.1")
-# app.add_middleware(JwtAuthorizationMiddleware)
 
 
 @app.post("/api/messages")
@@ -30,6 +27,8 @@ async def health_check():
 
 if __name__ == "__main__":
     try:
-        uvicorn.run(app, host="0.0.0.0", port=environ.get("PORT", 3978))
+        wf = certification_preparation_workflow()
+        serve(entities=[wf], instrumentation_enabled=True)
+        # uvicorn.run(app, host="0.0.0.0", port=environ.get("PORT", 3978))
     except Exception as error:
         raise error

@@ -1,9 +1,6 @@
 import os, json
-import datetime
-from pydantic import BaseModel
-from dataclasses import dataclass
 from azure.identity import DefaultAzureCredential
-from agent_framework import Agent
+from agent_framework import Agent, ChatOptions
 from agent_framework.azure import AzureAIAgentClient
 from agent_framework.openai import OpenAIResponsesClient
 from config import AiServicesConfig
@@ -20,9 +17,9 @@ class CustomAgent(Agent):
         prompt_file,
         model,
         tools=[],
-        output_format: BaseModel | None = None,
+        output_format: object | None = None,
     ):
-        instructions = self._load_instructions(prompt_file, output_format)
+        instructions = self._load_instructions(prompt_file)
         client = self.get_client(model)
         super().__init__(
             client=client,
@@ -31,11 +28,12 @@ class CustomAgent(Agent):
             name=name,
             description=description,
             tools=tools,
+            default_options=(
+                ChatOptions(response_format=output_format) if output_format else None
+            ),
         )
 
-    def _load_instructions(
-        self, prompt_file: str, output_format: BaseModel | None
-    ) -> str:
+    def _load_instructions(self, prompt_file: str) -> str:
         prompt_path = os.path.join(
             os.path.dirname(__file__), "prompts", "system", prompt_file
         )
@@ -45,12 +43,13 @@ class CustomAgent(Agent):
         with open(prompt_path, "r", encoding="utf-8") as file:
             prompt_content = file.read()
 
-        if output_format:
-            prompt_content += f"""
-            Output your response as JSON:
+        # if output_format:
+        #     output_schema = dataclass_to_basemodel(output_format).model_json_schema()
+        #     prompt_content += f"""
+        #     Output your response as JSON:
 
-            {json.dumps(output_format.model_json_schema(), indent=2)}
-            """
+        #     {json.dumps(output_schema, indent=2)}
+        #     """
 
         return prompt_content
 

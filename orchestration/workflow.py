@@ -1,28 +1,32 @@
 from typing import cast, Any
 from agent_framework import (
     MCPStreamableHTTPTool,
-    WorkflowRunState,
     WorkflowBuilder,
+    WorkflowExecutor,
     Message,
+    Executor,
+    AgentExecutor,
+    Workflow,
 )
-from orchestration.agents.state import LearningPath, StudyPlan
+from agent_framework.orchestrations import SequentialBuilder
+from orchestration.agents import state
 from orchestration.agents.core import CustomAgent
 from orchestration.agents.dispatcher import Dispatcher
-from orchestration.agents.readiness_assessment import ReadinessAssessment
-from orchestration.agents.human_validator import HumanValidator
+from orchestration.agents.student_readiness import StudentReadinessEval
+from orchestration.agents.aggregator import Aggregator
 from orchestration.agents import models
 
 
 def certification_preparation_workflow():
 
-    MAX_ITERATIONS = 3
+    MAX_ITERATIONS = 200
 
     workflow_dispatcher = Dispatcher()
 
-    readiness_assessment = ReadinessAssessment()
+    human_validation = StudentReadinessEval()
 
     learn_path_curator = CustomAgent(
-        name="LearnPathCurator",
+        name="learn-path-curator",
         description="Learn Path Curator for Microsoft Certification",
         tools=[
             MCPStreamableHTTPTool(
@@ -33,25 +37,36 @@ def certification_preparation_workflow():
                 description="Microsoft Learn official MCP server.",
             )
         ],
-        output_format=LearningPath,
+        output_format=state.LearningPath,
         prompt_file="learn_path_curator.md",
         model=models.LEARNING_PATH_CURATOR_AGENT,
     )
 
     study_plan_generator = CustomAgent(
-        name="StudyPlanGenerator",
+        name="study-plan-generator",
         description="Study Plan Generator Agent",
         prompt_file="study_plan_generator.md",
-        output_format=StudyPlan,
+        output_format=state.StudyPlan,
         model=models.STUDY_PLAN_GENERATOR_AGENT,
     )
 
     engagement_agent = CustomAgent(
-        name="EngagementAgent",
+        name="engagement-agent",
         description="Study Plan Engagement Agent",
         prompt_file="engagement_agent.md",
         model=models.ENGAGEMENT_AGENT_MODEL,
+        output_format=state.WorkflowState,
     )
+
+    readiness_assessment = CustomAgent(
+        name="readiness-assessment",
+        description="Study Plan readiness assessment agent",
+        prompt_file="readiness_assessment.md",
+        model=models.READINESS_ASSESSMENT_AGENT,
+        output_format=state.WorkflowState,
+    )
+
+    aggregator = Aggregator()
 
     return (
         WorkflowBuilder(
@@ -60,12 +75,12 @@ def certification_preparation_workflow():
             start_executor=workflow_dispatcher,
         )
         .add_edge(workflow_dispatcher, learn_path_curator)
-        .add_edge(learn_path_curator, study_plan_generator)
-        .add_edge(study_plan_generator, readiness_assessment)
-        # .add_edge(learn_path_curator, study_plan_generator)
-        # .add_edge(study_plan_generator, engagement_agent)
-        # .add_edge()
-        # .add_chain([learn_path_curator, study_plan_generator, engagement_agent])
+        .add_chain([learn_path_curator, study_plan_generator, engagement_agent])
+        .add_edge(engagement_agent, human_validation)
+        .add_edge(human_validation, readiness_assessment)
+        .add_edge(readiness_assessment, aggregator)
+        .add_edge(aggregator, human_validation)
+        .add_edge(aggregator, workflow_dispatcher)
     ).build()
 
 
@@ -73,7 +88,7 @@ async def run(message: str):
 
     workflow = certification_preparation_workflow()
 
-    events = await workflow.run(message)
+    events = await workflow.run(message, stream=True)
     outputs = events.get_outputs()
     if outputs:
         print("===== Final Conversation =====")
