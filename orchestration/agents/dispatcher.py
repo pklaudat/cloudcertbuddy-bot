@@ -2,7 +2,7 @@ import os
 from string import Template
 from agent_framework import Executor, handler, WorkflowContext, ChatOptions, Message
 from agent_framework.openai import OpenAIChatClient
-from orchestration.agents.state import StudentInput
+from orchestration.state import StudentInput
 from orchestration.guardrails.content_satety import ContentSatefy
 from orchestration.agents import models
 

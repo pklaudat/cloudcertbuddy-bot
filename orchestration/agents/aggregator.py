@@ -16,8 +16,6 @@ class Aggregator(Executor):
     async def handle(self, final_plan: AgentExecutorResponse, ctx: WorkflowContext):
         content = json.loads(final_plan.agent_response.text)
 
-        print(content)
-
         readiness = content.get("readiness", {}).get("status", "pending").strip().lower()
 
         if readiness == "modify":

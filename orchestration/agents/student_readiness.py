@@ -1,6 +1,4 @@
 import json
-import os
-from string import Template
 from agent_framework import (
     Executor,
     WorkflowContext,
@@ -10,8 +8,11 @@ from agent_framework import (
     AgentExecutorResponse,
     Message,
 )
-from agent_framework.orchestrations import AgentRequestInfoResponse
-from orchestration.agents import state
+from orchestration.state import (
+    StudentReadinessCheck,
+    StudyPlan,
+    WorkflowState
+)
 
 
 class StudentReadinessEval(Executor):
@@ -31,7 +32,7 @@ class StudentReadinessEval(Executor):
                 "no study sessions found, moving to the beginning of chain to curate a learning path for the student again."
             )
 
-        structured_input = state.StudyPlan(**study_plan_content.get("generated_study_plan", {}))
+        structured_input = StudyPlan(**study_plan_content.get("generated_study_plan", {}))
 
         prompt = "Are you ready to take the trainings?"
         prompt += (
@@ -49,16 +50,16 @@ class StudentReadinessEval(Executor):
         )
 
         await ctx.request_info(
-            request_data=state.StudentReadinessCheck(
+            request_data=StudentReadinessCheck(
                 prompt=prompt,
-                current_state=state.WorkflowState(**study_plan_content)
+                current_state=WorkflowState(**study_plan_content)
             ),
             response_type=str,
         )
 
     @response_handler
     async def on_human_response(
-        self, request: state.StudentReadinessCheck, response: str, ctx: WorkflowContext[str]
+        self, request: StudentReadinessCheck, response: str, ctx: WorkflowContext[str]
     ):
         message = f"""
         This is the current learning path: {request.current_state.model_dump_json()}

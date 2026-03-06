@@ -1,4 +1,4 @@
-import os, json
+import os
 from azure.identity import DefaultAzureCredential
 from agent_framework import Agent, ChatOptions
 from agent_framework.azure import AzureAIAgentClient
@@ -42,14 +42,6 @@ class CustomAgent(Agent):
 
         with open(prompt_path, "r", encoding="utf-8") as file:
             prompt_content = file.read()
-
-        # if output_format:
-        #     output_schema = dataclass_to_basemodel(output_format).model_json_schema()
-        #     prompt_content += f"""
-        #     Output your response as JSON:
-
-        #     {json.dumps(output_schema, indent=2)}
-        #     """
 
         return prompt_content
 

@@ -9,7 +9,7 @@ from agent_framework import (
     Workflow,
 )
 from agent_framework.orchestrations import SequentialBuilder
-from orchestration.agents import state
+from orchestration.state import *
 from orchestration.agents.core import CustomAgent
 from orchestration.agents.dispatcher import Dispatcher
 from orchestration.agents.student_readiness import StudentReadinessEval
@@ -37,7 +37,7 @@ def certification_preparation_workflow():
                 description="Microsoft Learn official MCP server.",
             )
         ],
-        output_format=state.LearningPath,
+        output_format=LearningPath,
         prompt_file="learn_path_curator.md",
         model=models.LEARNING_PATH_CURATOR_AGENT,
     )
@@ -46,7 +46,7 @@ def certification_preparation_workflow():
         name="study-plan-generator",
         description="Study Plan Generator Agent",
         prompt_file="study_plan_generator.md",
-        output_format=state.StudyPlan,
+        output_format=StudyPlan,
         model=models.STUDY_PLAN_GENERATOR_AGENT,
     )
 
@@ -55,7 +55,7 @@ def certification_preparation_workflow():
         description="Study Plan Engagement Agent",
         prompt_file="engagement_agent.md",
         model=models.ENGAGEMENT_AGENT_MODEL,
-        output_format=state.WorkflowState,
+        output_format=WorkflowState,
     )
 
     readiness_assessment = CustomAgent(
@@ -63,7 +63,7 @@ def certification_preparation_workflow():
         description="Study Plan readiness assessment agent",
         prompt_file="readiness_assessment.md",
         model=models.READINESS_ASSESSMENT_AGENT,
-        output_format=state.WorkflowState,
+        output_format=WorkflowState,
     )
 
     aggregator = Aggregator()
